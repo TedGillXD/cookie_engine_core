@@ -1,16 +1,17 @@
 #pragma once
 #include "Array.hpp"
 #include <cassert>
+#include <string>
 #include <functional>
 
 namespace Cookie::Util {
 
-	template<typename Type, bool bShouldDestruct = false>
+	template<typename Type, bool bShouldDestruct = std::is_destructible<Type>::value>
 	class Set {
 
 	};
 
-	template<typename Type, bool bShouldDestruct = false>
+	template<typename Type, bool bShouldDestruct = std::is_destructible<Type>::value>
 	class HashSet {
 	public:	//constructors and destructor
 		//constructors
@@ -34,11 +35,18 @@ namespace Cookie::Util {
 		inline const uint32_t GetSize() { return _size; }
 		inline const uint32_t GetBucketSize() { return _buckets.GetSize(); }
 
+		// implement class Iterator, begin() and end() to support C++11 interation
+
 	private:
 		static const uint32_t defaultBucketSize = 13;
 
 		Array<Array<Type>> _buckets;
 		uint32_t _size;
+
+#ifdef _DEBUG
+	private:
+		std::string _name;
+#endif
 	};
 
 	template<typename Type, bool bShouldDestruct /*= false*/>

@@ -2,17 +2,19 @@
 #include <cstdint>
 #include <cassert>
 #include <cstring>
+#include <string>
 #include <algorithm>
 
 namespace Cookie::Util {
 
-	template<typename Type, bool bShouldDestruct = false>
+	template<typename Type, bool bShouldDestruct = std::is_destructible<Type>::value>
 	class Array {
 	public:		// constructors and destructors
 		//constructors
 		Array();
 		Array(uint32_t size);
 		Array(uint32_t size, Type data);
+		Array(std::initializer_list<Type> initList);
 		~Array();									//destructor
 		Array(const Array& other);					//copy constructor
 		Array& operator=(const Array& other);		//copy assignment operator
@@ -29,6 +31,7 @@ namespace Cookie::Util {
 		void Insert(Type data, uint32_t index);
 		void Erase(uint32_t index);
 		void Resize(uint32_t newSize);
+		void Resize(uint32_t newSize, const Type& value);
 
 		[[nodiscard]] Type& Front();
 		[[nodiscard]] Type& Back();
@@ -37,9 +40,9 @@ namespace Cookie::Util {
 
 		void Reserve(uint32_t newCapacity);
 
-		[[nodiscard]] inline uint32_t GetCapacity();
-		[[nodiscard]] inline uint32_t GetSize();
-		[[nodiscard]] inline Type* GetData();
+		[[nodiscard]] inline const uint32_t GetCapacity();
+		[[nodiscard]] inline const uint32_t GetSize();
+		[[nodiscard]] inline const Type* GetData();
 
 		void Clear();
 
@@ -53,6 +56,11 @@ namespace Cookie::Util {
 		Type* _data;
 		uint32_t _capacity;
 		uint32_t _size;
+
+#ifdef _DEBUG
+	private:
+		std::string _name;
+#endif
 	};
 
 	// Definition of class Array
@@ -61,14 +69,14 @@ namespace Cookie::Util {
 	Array<Type, bShouldDestruct>::Array() {
 		_capacity = 10;
 		_size = 0;
-		_data = new Type[_capacity];
+		_data = static_cast<Type*>(calloc(_capacity, sizeof(Type)));
 	}
 
 	template<typename Type, bool bShouldDestruct /*= false*/>
 	Array<Type, bShouldDestruct>::Array(uint32_t size) {
 		_capacity = size;
 		_size = size;
-		_data = new Type[size];
+		_data = static_cast<Type*>(calloc(_capacity, sizeof(Type)));
 		memset(_data, 0, sizeof(_data));
 	}
 
@@ -78,16 +86,22 @@ namespace Cookie::Util {
 	}
 
 	template<typename Type, bool bShouldDestruct /*= false*/>
+	Array<Type, bShouldDestruct>::Array(std::initializer_list<Type> initList) : _size(initList.size()), _capacity(_size) {
+		_data = static_cast<Type*>(calloc(_capacity, sizeof(Type)));
+		std::copy(initList.begin(), initList.end(), _data);
+	}
+
+	template<typename Type, bool bShouldDestruct /*= false*/>
 	Array<Type, bShouldDestruct>::~Array() {
 		if (bShouldDestruct) {
 			std::for_each(_data, _data + _size, [](Type& data) -> void { data.~Type(); });
 		}
-		delete[] _data;
+		free(_data);
 	}
 
 	template<typename Type, bool bShouldDestruct /*= false*/>
 	Array<Type, bShouldDestruct>::Array(const Array& other) : _size(other._size), _capacity(other._capacity) {
-		_data = new Type[_size];
+		_data = static_cast<Type*>(calloc(_capacity, sizeof(Type)));
 		for (uint32_t i = 0; i < _size; i++) {
 			_data[i] = other._data[i];
 		}
@@ -117,7 +131,7 @@ namespace Cookie::Util {
 		if (this != std::addressof(other)) {
 			Clear();
 			_capacity = 0;
-			if(_data) delete[] _data;
+			if(_data) free(_data);
 			_data = nullptr;
 
 			_capacity = other._capacity;
@@ -134,9 +148,9 @@ namespace Cookie::Util {
 	void Array<Type, bShouldDestruct>::HandleInsufficientCapacity()
 	{
 		_capacity *= 2;
-		auto* temp = new Type[_capacity];
-		memcpy(temp, _data, sizeof(_data));
-		if(_data) delete[] _data;
+		Type* temp = static_cast<Type*>(calloc(_capacity, sizeof(Type)));
+		memcpy(temp, _data, sizeof(Type) * _size);
+		if(_data) free(_data);
 		_data = temp;
 	}
 
@@ -208,6 +222,17 @@ namespace Cookie::Util {
 
 	template<typename Type, bool bShouldDestruct /*= false*/>
 	void Array<Type, bShouldDestruct>::Resize(uint32_t newSize) {
+		static_assert(std::is_default_constructible<Type>::value,
+			"Type must be default-constructible.");
+
+		Resize(newSize, Type());
+	}
+
+	template<typename Type, bool bShouldDestruct /*= false*/>
+	void Array<Type, bShouldDestruct>::Resize(uint32_t newSize, const Type& value) {
+		static_assert(std::is_copy_constructible<Type>::value,
+			"Type must be copy-constructible.");
+
 		if (newSize < _size) {
 			if (bShouldDestruct) {	// cleaning
 				std::for_each(_data + newSize, _data + _size, [](Type& item) -> void { item.~Type(); });
@@ -216,10 +241,14 @@ namespace Cookie::Util {
 				memset(_data + newSize, 0, sizeof(Type) * (_size - newSize));
 			}
 		}
-		_size = newSize;
-		while (_size > _capacity) {	// if newsize is bigger than capacity, we need to allocate more space
-			HandleInsufficientCapacity();
-		}
+		else if (newSize > _size) {
+			while (_size > _capacity) {	// if newsize is bigger than capacity, we need to allocate more space
+				HandleInsufficientCapacity();
+			}
+			while (_size < newSize) {
+				PushBack(value);
+			}
+		}		
 	}
 
 	template<typename Type, bool bShouldDestruct /*= false*/>
@@ -252,26 +281,26 @@ namespace Cookie::Util {
 			Resize(newCapacity);
 		}
 		else if (newCapacity > _size) {
-			auto* temp = new Type[newCapacity];
-			memcpy(temp, _data, sizeof(_data));
-			delete[] _data;
+			Type* temp = static_cast<Type*>(calloc(newCapacity, sizeof(Type)));
+			memcpy(temp, _data, sizeof(Type) * _size);
+			free(_data);
 			_data = temp;
 		}
 		_capacity = newCapacity;
 	}
 
 	template<typename Type, bool bShouldDestruct /*= false*/>
-	uint32_t Array<Type, bShouldDestruct>::GetCapacity() {
+	const uint32_t Array<Type, bShouldDestruct>::GetCapacity() {
 		return _capacity;
 	}
 
 	template<typename Type, bool bShouldDestruct /*= false*/>
-	Type* Array<Type, bShouldDestruct>::GetData() {
+	const Type* Array<Type, bShouldDestruct>::GetData() {
 		return _data;
 	}
 
 	template<typename Type, bool bShouldDestruct /*= false*/>
-	uint32_t Array<Type, bShouldDestruct>::GetSize() {
+	const uint32_t Array<Type, bShouldDestruct>::GetSize() {
 		return _size;
 	}
 
