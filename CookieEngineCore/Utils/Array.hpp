@@ -36,13 +36,15 @@ namespace Cookie::Util {
 		[[nodiscard]] Type& Front();
 		[[nodiscard]] Type& Back();
 		[[nodiscard]] Type& At(uint32_t index);
+		[[nodiscard]] const Type& At(uint32_t index) const;
 		[[nodiscard]] Type& operator[](uint32_t index);
+		[[nodiscard]] const Type& operator[](uint32_t index) const;
 
 		void Reserve(uint32_t newCapacity);
 
-		[[nodiscard]] inline const uint32_t GetCapacity();
-		[[nodiscard]] inline const uint32_t GetSize();
-		[[nodiscard]] inline const Type* GetData();
+		[[nodiscard]] inline const uint32_t GetCapacity() const { return _capacity; }
+		[[nodiscard]] inline const uint32_t GetSize() const { return _size; }
+		[[nodiscard]] inline const Type* GetData() const { return _data; }
 
 		void Clear();
 
@@ -109,6 +111,7 @@ namespace Cookie::Util {
 
 	template<typename Type, bool bShouldDestruct /*= false*/>
 	Array<Type, bShouldDestruct>& Array<Type, bShouldDestruct>::operator=(const Array& other) {
+		static_assert(std::is_copy_constructible<Type>::value, "Type should be copy constructible");
 		assert(this != std::addressof(other));
 		if (this != std::addressof(other)) {
 			Clear();
@@ -136,7 +139,7 @@ namespace Cookie::Util {
 
 			_capacity = other._capacity;
 			_size = other._size;
-			_data = other._size;
+			_data = other._data;
 			other.Reset();
 		}
 		return *this;
@@ -269,8 +272,20 @@ namespace Cookie::Util {
 		return _data[index];
 	}
 
+	template<typename Type, bool bShouldDestruct /*= std::is_destructible<Type>::value*/>
+	const Type& Array<Type, bShouldDestruct>::At(uint32_t index) const {
+		assert(_data && _size && index < _size);
+		return _data[index];
+	}
+
 	template<typename Type, bool bShouldDestruct /*= false*/>
 	Type& Array<Type, bShouldDestruct>::operator[](uint32_t index) {
+		assert(_data && _size && index < _size);
+		return _data[index];
+	}
+
+	template<typename Type, bool bShouldDestruct /*= std::is_destructible<Type>::value*/>
+	const Type& Array<Type, bShouldDestruct>::operator[](uint32_t index) const {
 		assert(_data && _size && index < _size);
 		return _data[index];
 	}
@@ -288,22 +303,6 @@ namespace Cookie::Util {
 		}
 		_capacity = newCapacity;
 	}
-
-	template<typename Type, bool bShouldDestruct /*= false*/>
-	const uint32_t Array<Type, bShouldDestruct>::GetCapacity() {
-		return _capacity;
-	}
-
-	template<typename Type, bool bShouldDestruct /*= false*/>
-	const Type* Array<Type, bShouldDestruct>::GetData() {
-		return _data;
-	}
-
-	template<typename Type, bool bShouldDestruct /*= false*/>
-	const uint32_t Array<Type, bShouldDestruct>::GetSize() {
-		return _size;
-	}
-
 
 	template<typename Type, bool bShouldDestruct /*= false*/>
 	void Array<Type, bShouldDestruct>::Clear() {
