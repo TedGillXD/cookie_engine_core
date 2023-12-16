@@ -76,6 +76,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Common\Common.h" />
+    <ClInclude Include="Common\DebugMacros.h" />
+    <ClInclude Include="Graphics\Direct3D12\Direct3DClient.h" />
+    <ClInclude Include="Platform\Client.h" />
+    <ClInclude Include="Platform\Input\Input.h" />
+    <ClInclude Include="Platform\Platform.h" />
+    <ClInclude Include="Platform\Window.h" />
     <ClInclude Include="Utils\Array.hpp" />
     <ClInclude Include="Utils\Map.hpp" />
     <ClInclude Include="Utils\Set.hpp" />
@@ -83,6 +90,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Main.cpp" />
+    <ClCompile Include="Graphics\Direct3D12\Direct3DClient.cpp" />
+    <ClCompile Include="Platform\Client.cpp" />
+    <ClCompile Include="Platform\Input\Input.cpp" />
+    <ClCompile Include="Platform\Window.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

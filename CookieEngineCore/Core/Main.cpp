@@ -1,12 +1,20 @@
 #include "Utils/Utils.h"
+#include "Platform/Platform.h"
+#include "Graphics/Direct3D12/Direct3DClient.h"
 #include <iostream>
-#include <unordered_set>
 
 int main() {
-	using namespace Cookie::Util;
+	Cookie::Graphsic::Direct3DClient client;
+	
+	if (client.Init()) {
+		while (!client.ShouldClose()) {
+			//1. update window
+			client.Update();
+			//2. update objects status(add new object, update object position, etc.)
 
-
-	HashMap<int, HashSet<int>> m;
+			
+		}
+	}
 
 	return 0;
 }

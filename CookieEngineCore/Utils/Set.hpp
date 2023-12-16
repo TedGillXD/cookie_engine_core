@@ -14,6 +14,10 @@ namespace Cookie::Util {
 
 	template<typename Type>
 	class HashSet {
+		static_assert(std::is_default_constructible<Type>::value, "Type should be default constructible!");
+
+		DEBUG_INFO()
+
 	public:	//constructors and destructor
 		//constructors
 		HashSet();
@@ -33,7 +37,7 @@ namespace Cookie::Util {
 
 	public:	//member functions
 		void Insert(Type data);
-		[[nodiscard]] bool Contain(Type data);
+		[[nodiscard]] bool Contain(const Type& data);
 		void Erase(Type data);
 		void Clear();
 
@@ -44,44 +48,56 @@ namespace Cookie::Util {
 		// implement class Iterator, begin() and end() to support C++11 interation
 		class Iterator {
 		public:
-			Iterator(Type* ptr) : _ptr(ptr), currentBucketIndex(0), currentIndex(0) { }
-			Iterator(Type* ptr, uint32_t bucketIndex) : _ptr(ptr), currentBucketIndex(bucketIndex), currentIndex(0) { }
-
-			[[nodiscard]] inline Type& operator*() const { return *_ptr[currentBucketIndex][currentIndex]; }
-			[[nodiscard]] inline Iterator& operator++() { 
-				currentIndex++; 
-				if (currentIndex >= *_ptr[currentBucketIndex].GetSize()) {
-					currentIndex = 0;
-					currentBucketIndex++;
-				}
+			Iterator(Array<Array<Type>>* ptr) : _ptr(ptr), currentBucketIndex(-1), currentIndex(0) { 
+				currentBucketIndex = GetNextAvailable(currentBucketIndex);
 			}
-			[[nodiscard]] inline bool operator!=(const Iterator& other) const { 
+			Iterator(Array<Array<Type>>* ptr, uint32_t bucketIndex) : _ptr(ptr), currentBucketIndex(bucketIndex), currentIndex(0) { }
+
+			inline Type& operator*() const { return (*_ptr)[currentBucketIndex][currentIndex]; }
+			inline Iterator& operator++() { 
+				currentIndex++; 
+				if (currentIndex >= (*_ptr)[currentBucketIndex].GetSize()) {
+					currentIndex = 0;
+					currentBucketIndex = GetNextAvailable(currentBucketIndex);
+				}
+				return *this;
+			}
+			inline bool operator!=(const Iterator& other) const { 
 				return (_ptr != other._ptr || currentBucketIndex != other.currentBucketIndex || currentIndex != other.currentIndex);
 			}
-			[[nodiscard]] inline bool operator==(const Iterator& other) const {
+			inline bool operator==(const Iterator& other) const {
 				return (_ptr == other._ptr && currentBucketIndex == other.currentBucketIndex && currentIndex == other.currentIndex);
 			}
+
+		private:
+			[[nodiscard]] inline uint32_t GetNextAvailable(uint32_t current) {
+				current++;
+				while (current < (*_ptr).GetSize()) {
+					if ((*_ptr)[current].GetSize() == 0) {
+						current++;
+					} else {
+						break;
+					}
+				}
+				return current;
+			}
+
 		private:
 			Array<Array<Type>>* _ptr;
 			uint32_t currentBucketIndex;
 			uint32_t currentIndex;
 		};
 
-		inline Iterator begin() { return Iterator(&_buckets); }
-		inline Iterator end() { return Iterator(&_buckets, _buckets.GetSize()); }
-		inline Iterator begin() const { return Iterator(&_buckets); }
-		inline Iterator end() const { return Iterator(&_buckets, _buckets.GetSize()); }
+		[[nodiscard]] inline Iterator begin() { return Iterator(&_buckets); }
+		[[nodiscard]] inline Iterator end() { return Iterator(&_buckets, _buckets.GetSize()); }
+		[[nodiscard]] Iterator begin() const { return Iterator(&_buckets); }
+		[[nodiscard]] inline Iterator end() const { return Iterator(&_buckets, _buckets.GetSize()); }
 
 	private:
 		static const uint32_t defaultBucketSize = 13;
 
 		Array<Array<Type>> _buckets;
 		uint32_t _size = 0;
-
-#ifdef _DEBUG
-	private:
-		std::string _name;
-#endif
 	};
 
 	// member function definitions of HashSet
@@ -89,12 +105,14 @@ namespace Cookie::Util {
 	HashSet<Type>::HashSet() {
 		_buckets.Resize(defaultBucketSize);
 		Init();
+		OBJECT_CREATE("HashSet");
 	}
 
 	template<typename Type>
 	HashSet<Type>::HashSet(uint32_t bucketCount) {
 		_buckets.Resize(bucketCount);
 		Init();
+		OBJECT_CREATE("HashSet");
 	}
 
 	template<typename Type>
@@ -104,15 +122,17 @@ namespace Cookie::Util {
 		for (Type& item : arr) {
 			Insert(item);
 		}
+		OBJECT_CREATE("HashSet");
 	}
 
 	template<typename Type>
 	HashSet<Type>::HashSet(std::initializer_list<Type> initList) {
 		_buckets.Resize(defaultBucketSize);
 		Init();
-		for (Type& item : initList) {
+		for (const Type& item : initList) {
 			Insert(item);
 		}
+		OBJECT_CREATE("HashSet");
 	}
 
 	template<typename Type>
@@ -126,6 +146,7 @@ namespace Cookie::Util {
 			newSize += other._buckets[i].GetSize();
 		}
 		_size = newSize;
+		OBJECT_CREATE("HashSet");
 	}
 
 	template<typename Type>
@@ -142,6 +163,7 @@ namespace Cookie::Util {
 			}
 			_size = newSize;
 		}
+		OBJECT_CREATE("HashSet");
 		return *this;
 	}
 
@@ -157,6 +179,7 @@ namespace Cookie::Util {
 		}
 		_size = newSize;
 		other.Reset();
+		OBJECT_CREATE("HashSet");
 	}
 
 	template<typename Type>
@@ -174,6 +197,7 @@ namespace Cookie::Util {
 			_size = newSize;
 			other.Reset();
 		}
+		OBJECT_CREATE("HashSet");
 		return *this;
 	}
 
@@ -205,7 +229,7 @@ namespace Cookie::Util {
 	}
 
 	template<typename Type>
-	bool HashSet<Type>::Contain(Type data) {
+	bool HashSet<Type>::Contain(const Type& data) {
 		for (Type& item : _buckets[GetHashKey(data)]) {
 			if (item == data) {
 				return true;
