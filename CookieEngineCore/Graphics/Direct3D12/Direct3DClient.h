@@ -14,9 +14,13 @@ namespace Cookie::Graphsic {
 		~Direct3DClient() override;
 
 	private:
+		bool CreateCommandObjects();
 		bool CreateSwapChain();
 		bool CreateRenderTargetBuffer();
 		void ReleaseRenderTargetBuffer();
+		bool Resize();
+
+		void FlushCommandQueue();
 
 	public:
 		bool Init() override;
@@ -35,7 +39,7 @@ namespace Cookie::Graphsic {
 		static constexpr uint32_t BufferCount = 2;
 		Cookie::Platform::Window* _window;
 
-		//device
+		// device
 		Microsoft::WRL::ComPtr<ID3D12Device10> _device;
 		uint32_t rtvIncrement;
 		uint32_t srvUavCbvIncrement;
@@ -51,6 +55,11 @@ namespace Cookie::Graphsic {
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> _rtvHeap;
 		Microsoft::WRL::ComPtr<ID3D12Resource2> _renderTargetBuffer[BufferCount];
 		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[BufferCount];
+
+		// fence
+		uint64_t _currentFence;
+		Microsoft::WRL::ComPtr<ID3D12Fence1> _fence;
+
 
 	#ifdef _DEBUG
 		Microsoft::WRL::ComPtr<ID3D12Debug6> _debug;

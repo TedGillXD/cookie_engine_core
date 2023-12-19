@@ -10,6 +10,7 @@ namespace Cookie::Platform {
 		_handle = nullptr;
 		_bIsFullScreen = false;
 		_bShouldClose = false;
+		_bNeedResize = true;
 		_wndClass = 0;
 	}
 
@@ -19,6 +20,7 @@ namespace Cookie::Platform {
 		_handle = nullptr;
 		_bIsFullScreen = false;
 		_bShouldClose = false;
+		_bNeedResize = true;
 		_wndClass = 0;
 	}
 
@@ -26,7 +28,7 @@ namespace Cookie::Platform {
 		WNDCLASSEXW wcex{};
 		wcex.cbSize = sizeof(wcex);
 		wcex.style = CS_OWNDC;
-		wcex.lpfnWndProc = OnWindowMessage;
+		wcex.lpfnWndProc = ProcessWindow;
 		wcex.cbClsExtra = 0;
 		wcex.cbWndExtra = 0;
 		wcex.hInstance = GetModuleHandleW(nullptr);
@@ -72,6 +74,30 @@ namespace Cookie::Platform {
 	Window::~Window() {
 		if(_handle) DestroyWindow(_handle);
 		if(_wndClass) UnregisterClassW((LPCWSTR)_wndClass, GetModuleHandleW(nullptr));
+	}
+
+	LRESULT CALLBACK Window::ProcessWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+		switch (msg) {
+		case WM_SIZE:	//	process resize event
+			// TODO: Get the window and change the bNeedResize variable, width and height
+			break;
+		case WM_CLOSE:	// handle window close event
+			// TODO: Get the window by hwnd and change the _bShouldClose value.
+			break;
+		}
+		return ProcessInputs(hwnd, msg, wParam, lParam);
+	}
+
+	bool Window::UpdateWidthAndHeight() {
+		RECT rect;
+		bool ret = GetClientRect(_handle, &rect);
+		if (!ret) {
+			return ret;
+		}
+
+		_width = rect.right - rect.left;
+		_height = rect.bottom - rect.top;
+		return true;
 	}
 
 #endif	// _WIN64

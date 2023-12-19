@@ -14,16 +14,17 @@ int main() {
 			client.Update();
 
 			//2. begin frame
-
+			client.BeginFrame();
 
 			//3. pre draw
-
+			client.Predraw();
 
 			//4. draw
-
+			client.Draw();
 
 			//5. present
-
+			client.EndFrame();
+			client.Present();
 			
 		}
 	}

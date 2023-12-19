@@ -26,11 +26,20 @@ namespace Cookie::Platform {
 		DISABLE_MOVE_AND_COPY(Window);
 
 	public:
+		static LRESULT CALLBACK ProcessWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+	public:
 		void NewWindow(const std::string& windowTitle);
 		void SetFullScreen(bool bIsFullScreen);
 		void Display();
+		bool UpdateWidthAndHeight();
+
+
+		inline void CloseWindow() { _bShouldClose = true; }
+		inline void NoNeedResize() { _bNeedResize = false; }
 
 		[[nodiscard]] inline const bool ShouldClose() const { return _bShouldClose; }
+		[[nodiscard]] inline const bool NeedResize() const { return _bNeedResize; }
 		[[nodiscard]] inline const bool IsSuccess() const { return _handle != nullptr; }
 		[[nodiscard]] inline const HWND GetHandle() const { return _handle; }
 		[[nodiscard]] inline const uint32_t GetWidth() const { return _width; }
@@ -46,6 +55,7 @@ namespace Cookie::Platform {
 		ATOM _wndClass;
 		bool _bIsFullScreen;
 		bool _bShouldClose;
+		bool _bNeedResize;
 	};
 
 #endif	// _WIN64

@@ -16,6 +16,30 @@ namespace Cookie::Graphsic {
 		Shutdown();
 	}
 
+	bool Direct3DClient::CreateCommandObjects() {
+		//create command queue
+		D3D12_COMMAND_QUEUE_DESC queueDesc{};
+		queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+		queueDesc.NodeMask = 0;	//always 0 if the system only have 1 GPU, and this project will only support 1 GPU system
+		queueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_HIGH;
+		queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;	// this type of queue can basically do anything.
+		if (FAILED(_device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&_cmdQueue)))) {
+			return false;
+		}
+
+		//create command allocator 
+		if (FAILED(_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&_cmdAlloc)))) {
+			return false;
+		}
+
+		//create command list
+		if (FAILED(_device->CreateCommandList1(0, D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS(&_cmdList)))) {
+			return false;
+		}
+
+		return true;
+	}
+
 	bool Direct3DClient::CreateSwapChain() {
 		// 1. create swap chain object
 		DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
@@ -59,9 +83,7 @@ namespace Cookie::Graphsic {
 		}
 
 		// 4. create buffer
-		if (!CreateRenderTargetBuffer()) {
-			return false;
-		}
+		Resize();
 
 		return true;
 	}
@@ -85,7 +107,54 @@ namespace Cookie::Graphsic {
 	}
 
 	void Direct3DClient::ReleaseRenderTargetBuffer() {
+		for (auto& buffer : _renderTargetBuffer) {
+			if(buffer) buffer->Release();
+		}
+	}
+
+	bool Direct3DClient::Resize() {
+		for (int i = 0; i < BufferCount; i++) {
+			FlushCommandQueue();
+		}
+		ReleaseRenderTargetBuffer();
 		
+		if (!_window->UpdateWidthAndHeight()) {
+			return false;
+		}
+
+		HRESULT result = _swapChain->ResizeBuffers(
+			BufferCount,
+			_window->GetWidth(),
+			_window->GetHeight(),
+			DXGI_FORMAT_UNKNOWN,
+			DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING
+		);
+		if (result == S_FALSE) {
+			return false;
+		}
+
+		_window->NoNeedResize();
+		CreateRenderTargetBuffer();
+
+		return true;
+	}
+
+	void Direct3DClient::FlushCommandQueue() {
+		_currentFence++;
+		if (FAILED(_cmdQueue->Signal(_fence.Get(), _currentFence))) {
+			// TODO: throw an exception
+		}
+
+		if (_fence->GetCompletedValue() < _currentFence) {
+			HANDLE eventHandle = CreateEventEx(nullptr, nullptr, false, EVENT_ALL_ACCESS);
+
+			if (FAILED(_fence->SetEventOnCompletion(_currentFence, eventHandle))) {
+				// TODO: throw an exception
+			}
+
+			WaitForSingleObject(eventHandle, INFINITE);
+			CloseHandle(eventHandle);
+		}
 	}
 
 
@@ -109,43 +178,32 @@ namespace Cookie::Graphsic {
 		}
 		#endif	// _DEBUG
 
-		//1. create device
+		//1. create factory
+		if (FAILED(CreateDXGIFactory2(0, IID_PPV_ARGS(&_dxgiFactory)))) {
+			return false;
+		}
+
+		//2. create device
 		if (FAILED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&_device)))) {
 			return false;
 		}
 		rtvIncrement = _device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		srvUavCbvIncrement = _device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-		//2. create factory
-		if (FAILED(CreateDXGIFactory2(0, IID_PPV_ARGS(&_dxgiFactory)))) {
-			return false;
-		}
-		
-		//3. create command queue
-		D3D12_COMMAND_QUEUE_DESC queueDesc{};
-		queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-		queueDesc.NodeMask = 0;	//always 0 if the system only have 1 GPU, and this project will only support 1 GPU system
-		queueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_HIGH;
-		queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;	// this type of queue can basically do anything.
-		if (FAILED(_device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&_cmdQueue)))) {
+		//3. create fence
+		if (FAILED(_device->CreateFence(_currentFence, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&_fence)))) {
 			return false;
 		}
 
-		//4. create command allocator 
-		if (FAILED(_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&_cmdAlloc)))) {
+		//4. create command object: cmdQueue, cmdList
+		if (!CreateCommandObjects()) {
 			return false;
 		}
 
-		//5. create command list
-		if (FAILED(_device->CreateCommandList1(0, D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS(&_cmdList)))) {
-			return false;
-		}
-
-		//6. create swap chain
+		//5. create swap chain
 		if (!CreateSwapChain()) {
 			return false;
 		}
-
 
 		return true;
 	}
@@ -158,7 +216,12 @@ namespace Cookie::Graphsic {
 			DispatchMessageW(&message);
 		}
 
-		//TODO: 2. update render items
+		//2. Process resize event if needed.
+		if (_window->NeedResize()) {
+			Resize();
+		}
+
+		//TODO: 3. update render items
 
 	}
 
@@ -167,28 +230,48 @@ namespace Cookie::Graphsic {
 	}
 
 	void Direct3DClient::BeginFrame() {
+		// init command list first
+		_cmdAlloc->Reset();
+		_cmdList->Reset(_cmdAlloc.Get(), nullptr);
 
+		// TODO: change the state of back buffer from present to render target
 	}
 
 	void Direct3DClient::Predraw() {
-
+		
 	}
 
 	void Direct3DClient::Draw() {
-
+		
 	}
 
 	void Direct3DClient::EndFrame() {
+		// TODO: change the state of back buffer from render target to present
 
+		//close commandlist and execute it.
+		if (SUCCEEDED(_cmdList->Close())) {
+			ID3D12CommandList* lists[] = { _cmdList.Get() };
+			_cmdQueue->ExecuteCommandLists(1, lists);
+			FlushCommandQueue();
+		}
 	}
 
 	void Direct3DClient::Present() {
-
+		_swapChain->Present(0, 0);
 	}
 
 	void Direct3DClient::Shutdown() {
 
-		
+		_fence->Release();
+
+		for (auto& buffer : _renderTargetBuffer) {
+			buffer->Release();
+		}
+		_swapChain->Release();
+
+		_cmdList->Release();
+		_cmdAlloc->Release();
+		_cmdQueue->Release();
 
 	#ifdef _DEBUG
 		if (_dxgiDebug) {
