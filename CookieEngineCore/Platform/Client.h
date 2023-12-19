@@ -24,7 +24,16 @@ namespace Cookie::Platform {
 	public:
 		virtual bool Init() = 0;
 		virtual void Update() = 0;
+
+		virtual void BeginFrame() = 0;
+		virtual void EndFrame() = 0;
+		virtual void Predraw() = 0;
+		virtual void Draw() = 0;
+		virtual void Present() = 0;
+
 		virtual bool ShouldClose() = 0;
+
+		virtual void Shutdown() = 0;
 	};
 
 	class ClientFactory {

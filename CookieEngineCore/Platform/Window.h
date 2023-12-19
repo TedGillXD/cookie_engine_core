@@ -15,17 +15,6 @@ namespace Cookie::Platform {
 
 #ifdef _WIN64
 
-	namespace {
-		LPCWSTR GetString(std::string str) {
-			int buffer_size = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, nullptr, 0);
-			wchar_t* buffer = new wchar_t[buffer_size];
-			MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, buffer, buffer_size);
-			std::wstring ws(buffer);
-			delete[] buffer;
-			return ws.c_str();
-		}
-	}
-
 	/**
 	 * class Window is for creating window application in different operating system.
 	 */
@@ -37,13 +26,15 @@ namespace Cookie::Platform {
 		DISABLE_MOVE_AND_COPY(Window);
 
 	public:
-		void NewWindow(std::string windowTitle);
+		void NewWindow(const std::string& windowTitle);
 		void SetFullScreen(bool bIsFullScreen);
 		void Display();
 
 		[[nodiscard]] inline const bool ShouldClose() const { return _bShouldClose; }
 		[[nodiscard]] inline const bool IsSuccess() const { return _handle != nullptr; }
 		[[nodiscard]] inline const HWND GetHandle() const { return _handle; }
+		[[nodiscard]] inline const uint32_t GetWidth() const { return _width; }
+		[[nodiscard]] inline const uint32_t GetHeight() const { return _height; }
 
 	private:
 		static constexpr uint32_t _defaultWidth = (uint32_t)800;

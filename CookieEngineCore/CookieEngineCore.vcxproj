@@ -83,9 +83,10 @@
     <ClInclude Include="Platform\Input\Input.h" />
     <ClInclude Include="Platform\Platform.h" />
     <ClInclude Include="Platform\Window.h" />
-    <ClInclude Include="Utils\Array.hpp" />
-    <ClInclude Include="Utils\Map.hpp" />
-    <ClInclude Include="Utils\Set.hpp" />
+    <ClInclude Include="Utils\DataStructure\Array.hpp" />
+    <ClInclude Include="Utils\DataStructure\Map.hpp" />
+    <ClInclude Include="Utils\DataStructure\Set.hpp" />
+    <ClInclude Include="Utils\Logger\Logger.h" />
     <ClInclude Include="Utils\Utils.h" />
   </ItemGroup>
   <ItemGroup>

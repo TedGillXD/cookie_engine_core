@@ -4,13 +4,25 @@
 #include <iostream>
 
 int main() {
+	//TODO: Needs pre-initialization
+
 	Cookie::Graphsic::Direct3DClient client;
 	
 	if (client.Init()) {
 		while (!client.ShouldClose()) {
 			//1. update window
 			client.Update();
-			//2. update objects status(add new object, update object position, etc.)
+
+			//2. begin frame
+
+
+			//3. pre draw
+
+
+			//4. draw
+
+
+			//5. present
 
 			
 		}

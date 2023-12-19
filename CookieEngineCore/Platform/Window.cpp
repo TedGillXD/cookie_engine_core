@@ -22,7 +22,7 @@ namespace Cookie::Platform {
 		_wndClass = 0;
 	}
 
-	void Window::NewWindow(std::string windowTitle) {
+	void Window::NewWindow(const std::string& windowTitle) {
 		WNDCLASSEXW wcex{};
 		wcex.cbSize = sizeof(wcex);
 		wcex.style = CS_OWNDC;
@@ -45,7 +45,7 @@ namespace Cookie::Platform {
 		_handle = CreateWindowExW(
 			WS_EX_OVERLAPPEDWINDOW | WS_EX_APPWINDOW,
 			(LPCWSTR)_wndClass,
-			L"D3D12 Window",
+			std::wstring(windowTitle.begin(), windowTitle.end()).c_str(),
 			WS_OVERLAPPEDWINDOW | WS_VISIBLE,
 			100, 100,
 			_width, _height,
