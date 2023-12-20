@@ -34,3 +34,7 @@ private:				\
 #define DEBUG_INFO()
 
 #endif	// _DEBUG
+
+#ifndef ThrowIfFailed
+#define ThrowIfFailed(x) 
+#endif

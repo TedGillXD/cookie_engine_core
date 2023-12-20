@@ -71,6 +71,18 @@ namespace Cookie::Platform {
 		}
 	}
 
+	bool Window::UpdateWidthAndHeight() {
+		RECT rect;
+		bool ret = GetClientRect(_handle, &rect);
+		if (!ret) {
+			return ret;
+		}
+
+		_width = rect.right - rect.left;
+		_height = rect.bottom - rect.top;
+		return true;
+	}
+
 	Window::~Window() {
 		if(_handle) DestroyWindow(_handle);
 		if(_wndClass) UnregisterClassW((LPCWSTR)_wndClass, GetModuleHandleW(nullptr));
@@ -86,18 +98,6 @@ namespace Cookie::Platform {
 			break;
 		}
 		return ProcessInputs(hwnd, msg, wParam, lParam);
-	}
-
-	bool Window::UpdateWidthAndHeight() {
-		RECT rect;
-		bool ret = GetClientRect(_handle, &rect);
-		if (!ret) {
-			return ret;
-		}
-
-		_width = rect.right - rect.left;
-		_height = rect.bottom - rect.top;
-		return true;
 	}
 
 #endif	// _WIN64

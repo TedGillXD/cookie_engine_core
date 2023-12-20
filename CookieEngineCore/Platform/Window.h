@@ -1,4 +1,5 @@
 #pragma once
+#include "Common/MacroDefinition.h"
 #include "Common/Common.h"
 
 #ifdef _WIN64
