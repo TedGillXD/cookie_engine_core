@@ -6,6 +6,26 @@
 int main() {
 	//TODO: Needs pre-initialization
 
+	Cookie::Util::HashSet<int> s;
+	s.Insert(100);
+	s.Insert(200);
+	s.Insert(300);
+	s.Insert(400);
+	s.Insert(500);
+	s.Insert(600);
+	s.Insert(700);
+	s.Insert(800);
+	s.Insert(900);
+	s.Insert(1000);
+	s.Insert(1100);
+	s.Insert(1200);
+	s.Insert(1300);
+	s.Insert(1400);
+
+	for (auto& i : s) {
+		std::cout << i << " ";
+	}
+
 	Cookie::Graphsic::Direct3DClient client;
 	
 	if (client.Init()) {

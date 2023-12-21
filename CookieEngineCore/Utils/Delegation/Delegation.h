@@ -113,9 +113,9 @@ namespace Cookie::Util {
 		}
 
 		void Broadcast(ArgsType... args) {
-			std::for_each(_delegatePtrs.begin(), _delegatePtrs.end(), [](auto& delegatePtr) -> void {
-				(*delegatePtr)(args ...);
-			});
+			for (uint32_t i = 0; i < _delegatePtrs.GetSize(); i++) {
+				(*_delegatePtrs[i])(args ...);
+			}
 		}
 
 		void Clear() {

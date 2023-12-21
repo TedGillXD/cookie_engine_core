@@ -51,7 +51,7 @@
     <ClInclude Include="Utils\Logger\Logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\ClientManager.h">
+    <ClInclude Include="Core\ClientManager\ClientManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Timer\Timer.h">
@@ -80,7 +80,7 @@
     <ClCompile Include="Platform\Input\Input.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\ClientManager.cpp">
+    <ClCompile Include="Core\ClientManager\ClientManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Utils\Timer\Timer.cpp">

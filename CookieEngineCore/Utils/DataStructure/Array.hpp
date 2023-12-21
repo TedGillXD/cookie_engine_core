@@ -14,7 +14,7 @@ namespace Cookie::Util {
 		//constructors
 		Array();
 		Array(uint32_t size);
-		Array(uint32_t size, Type data);
+		Array(uint32_t size, const Type& data);
 		Array(std::initializer_list<Type> initList);
 		~Array();									//destructor
 		Array(const Array& other);					//copy constructor
@@ -83,8 +83,10 @@ namespace Cookie::Util {
 	}
 
 	template<typename Type, bool bShouldDestruct /*= false*/>
-	Array<Type, bShouldDestruct>::Array(uint32_t size, Type data) : Array(size) {
-		std::fill(_data, _data + size, &data);
+	Array<Type, bShouldDestruct>::Array(uint32_t size, const Type& data) : Array(size) {
+		std::for_each(begin(), end(), [&](Type& item) -> void {
+			item = data;
+		});
 	}
 
 	template<typename Type, bool bShouldDestruct /*= false*/>

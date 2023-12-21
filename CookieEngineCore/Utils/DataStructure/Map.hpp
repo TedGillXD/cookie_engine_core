@@ -48,12 +48,12 @@ namespace Cookie::Util {
 	public:
 		HashMap();
 		HashMap(uint32_t bucketSize);
-		HashMap(Array<Pair<Type1, Type2>>& arr);
+		HashMap(const Array<Pair<Type1, Type2>>& arr);
 		HashMap(std::initializer_list<Pair<Type1, Type2>> initList);
 		HashMap(const HashMap& other);									//copy constructor
 		HashMap& operator=(const HashMap& other);						//copy assignment operator
-		HashMap(HashMap&& other);										//move constructor
-		HashMap& operator=(HashMap&& other);							//move assignment operator
+		HashMap(HashMap&& other) noexcept ;								//move constructor
+		HashMap& operator=(HashMap&& other) noexcept ;					//move assignment operator
 		~HashMap() = default;											//destructor
 
 	private:	// internal member functions
@@ -123,6 +123,9 @@ namespace Cookie::Util {
 		[[nodiscard]] inline Iterator end() const { return Iterator(&_buckets, _buckets.GetSize()); }
 
 	private:
+		void Expansion();
+	
+	private:
 		static const uint32_t defaultBucketSize = 13;
 
 		Array<Array<Pair<Type1, Type2>>> _buckets;
@@ -144,7 +147,7 @@ namespace Cookie::Util {
 	}
 
 	template<typename Type1, typename Type2>
-	HashMap<Type1, Type2>::HashMap(Array<Pair<Type1, Type2>>& arr) {
+	HashMap<Type1, Type2>::HashMap(const Array<Pair<Type1, Type2>>& arr) {
 		_buckets.Resize(defaultBucketSize);
 		Init();
 		for (auto& item : arr) {
@@ -196,7 +199,7 @@ namespace Cookie::Util {
 	}
 
 	template<typename Type1, typename Type2>
-	HashMap<Type1, Type2>::HashMap(HashMap&& other) {
+	HashMap<Type1, Type2>::HashMap(HashMap&& other) noexcept {
 		_buckets.Clear();
 		_buckets.Resize(other.GetBucketSize());
 		Init();
@@ -211,7 +214,7 @@ namespace Cookie::Util {
 	}
 
 	template<typename Type1, typename Type2>
-	HashMap<Type1, Type2>& HashMap<Type1, Type2>::operator=(HashMap&& other) {
+	HashMap<Type1, Type2>& HashMap<Type1, Type2>::operator=(HashMap&& other) noexcept {
 		assert(this != &other);
 		if (this != &other) {
 			_buckets.Clear();
@@ -332,6 +335,26 @@ namespace Cookie::Util {
 		}
 		return Type2{};
 	}
+
+	template<typename Type1, typename Type2>
+	void Cookie::Util::HashMap<Type1, Type2>::Expansion() {
+		int newBucketSize = _buckets.GetSize();
+		while ((float)newBucketSize * 0.75f <= _size) {
+			newBucketSize *= 2;
+		}
+
+		Array<Array<Pair<Type1, Type2>>> newBucket(newBucketSize, Array<Pair<Type1, Type2>>());
+		for (uint32_t i = 0; i < _buckets.GetSize(); i++) {
+			for (uint32_t j = 0; j < _buckets.At(i).GetSize(); j++) {
+				newBucket.At(i).PushBack(_buckets.At(i).At(j));
+			}
+		}
+
+		_buckets.Clear();
+		_buckets.~Array();
+		_buckets = newBucket;
+	}
+
 }
 
 #pragma warning(default : 4715)

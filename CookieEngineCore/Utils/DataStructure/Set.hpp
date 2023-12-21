@@ -94,7 +94,11 @@ namespace Cookie::Util {
 		[[nodiscard]] inline Iterator end() const { return Iterator(&_buckets, _buckets.GetSize()); }
 
 	private:
-		static const uint32_t defaultBucketSize = 13;
+		void Expansion();
+
+	private:
+		inline static const uint32_t defaultBucketSize = 13;
+		inline static const float loadFactor = 0.75f;
 
 		Array<Array<Type>> _buckets;
 		uint32_t _size = 0;
@@ -117,7 +121,8 @@ namespace Cookie::Util {
 
 	template<typename Type>
 	HashSet<Type>::HashSet(Array<Type>& arr) {
-		_buckets.Resize(defaultBucketSize);
+		int bucketSize = (int)std::ceil((float)arr.GetSize() / loadFactor);
+		_buckets.Resize(bucketSize);
 		Init();
 		for (Type& item : arr) {
 			Insert(item);
@@ -127,7 +132,8 @@ namespace Cookie::Util {
 
 	template<typename Type>
 	HashSet<Type>::HashSet(std::initializer_list<Type> initList) {
-		_buckets.Resize(defaultBucketSize);
+		int bucketSize = (int)std::ceil((float)initList.size() / loadFactor);
+		_buckets.Resize(bucketSize);
 		Init();
 		for (const Type& item : initList) {
 			Insert(item);
@@ -226,6 +232,10 @@ namespace Cookie::Util {
 		if (Contain(data)) return;
 		_buckets[GetHashKey(data)].PushBack(data);
 		_size++;
+
+		if ((float)_buckets.GetSize() * 0.75f < _size) {
+			Expansion();
+		}
 	}
 
 	template<typename Type>
@@ -255,6 +265,25 @@ namespace Cookie::Util {
 	void HashSet<Type>::Clear() {
 		_buckets.Clear();
 		Init();
+	}
+
+	template<typename Type>
+	void HashSet<Type>::Expansion() {
+		int newBucketSize = _buckets.GetSize();
+		while ((float)newBucketSize * 0.75f <= _size) {
+			newBucketSize *= 2;
+		}
+
+		Array<Array<Type>> newBucket(newBucketSize, Array<Type>());
+		for (uint32_t i = 0; i < _buckets.GetSize(); i++) {
+			for (uint32_t j = 0; j < _buckets.At(i).GetSize(); j++) {
+				newBucket.At(i).PushBack(_buckets.At(i).At(j));
+			}
+		}
+
+		_buckets.Clear();
+		_buckets.~Array();
+		_buckets = newBucket;
 	}
 
 }

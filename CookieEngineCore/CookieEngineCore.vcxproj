@@ -79,7 +79,7 @@
     <ClInclude Include="Common\Common.h" />
     <ClInclude Include="Common\DebugMacros.h" />
     <ClInclude Include="Common\MacroDefinition.h" />
-    <ClInclude Include="Core\ClientManager.h" />
+    <ClInclude Include="Core\ClientManager\ClientManager.h" />
     <ClInclude Include="Graphics\Direct3D12\Direct3DClient.h" />
     <ClInclude Include="Platform\Client.h" />
     <ClInclude Include="Platform\Input\Input.h" />
@@ -94,7 +94,7 @@
     <ClInclude Include="Utils\Utils.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Core\ClientManager.cpp" />
+    <ClCompile Include="Core\ClientManager\ClientManager.cpp" />
     <ClCompile Include="Core\Main.cpp" />
     <ClCompile Include="Graphics\Direct3D12\Direct3DClient.cpp" />
     <ClCompile Include="Platform\Client.cpp" />
