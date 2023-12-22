@@ -22,7 +22,7 @@ namespace Cookie::Platform {
 	class Window {
 	public:
 		Window();
-		Window(uint8_t width, uint8_t height);
+		Window(uint32_t width, uint32_t height);
 		~Window();
 		DISABLE_MOVE_AND_COPY(Window);
 

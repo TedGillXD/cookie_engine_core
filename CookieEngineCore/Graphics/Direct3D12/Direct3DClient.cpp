@@ -4,16 +4,51 @@ namespace Cookie::Graphsic {
 
 
 #ifdef _WIN64
+
+
+	bool Direct3DDebug::Init() {
+		//enable d3d12 debug layer
+#ifdef _DEBUG
+		if (FAILED(D3D12GetDebugInterface(IID_PPV_ARGS(&_debug)))) {
+			return false;
+		}
+		_debug->EnableDebugLayer();
+		if (FAILED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&_dxgiDebug)))) {
+			return false;
+		}
+
+		return true;
+#endif	// _DEBUG
+	}
+
+	void Direct3DDebug::Shutdown() {
+#ifdef _DEBUG
+		if (_dxgiDebug) {
+			OutputDebugStringW(L"DXGI Reports living device objects:\n");
+			_dxgiDebug->ReportLiveObjects( // the function that will report all the living com objects. Base on this, we can check whether we still have some com objects not been released.
+				DXGI_DEBUG_ALL,
+				DXGI_DEBUG_RLO_FLAGS(DXGI_DEBUG_RLO_DETAIL | DXGI_DEBUG_RLO_IGNORE_INTERNAL)
+			);
+		}
+
+		_dxgiDebug->Release();
+		_debug->Release();
+#endif
+	}
+
+#pragma warning(disable : 26495)
+
 	Direct3DClient::Direct3DClient() {
 		_window = new Cookie::Platform::Window();
 	}
 
-	Direct3DClient::Direct3DClient(uint8_t width, uint8_t height) {
+	Direct3DClient::Direct3DClient(uint32_t width, uint32_t height, std::string windowTitle) {
+		_windowTitle = windowTitle;
 		_window = new Cookie::Platform::Window(width, height);
 	}
 
 	Direct3DClient::~Direct3DClient() {
-		Shutdown();
+		//Shutdown();
 	}
 
 	bool Direct3DClient::CreateCommandObjects() {
@@ -108,7 +143,8 @@ namespace Cookie::Graphsic {
 
 	void Direct3DClient::ReleaseRenderTargetBuffer() {
 		for (auto& buffer : _renderTargetBuffer) {
-			if(buffer) buffer->Release();
+// 			if(buffer) buffer->Release();
+			buffer.Reset();
 		}
 	}
 
@@ -167,16 +203,7 @@ namespace Cookie::Graphsic {
 
 		_window->Display();
 
-		//enable d3d12 debug layer
-		#ifdef _DEBUG
-		if (FAILED(D3D12GetDebugInterface(IID_PPV_ARGS(&_debug)))) {
-			return false;
-		}
-		_debug->EnableDebugLayer();
-		if (FAILED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&_dxgiDebug)))) {
-			return false;
-		}
-		#endif	// _DEBUG
+		
 
 		//1. create factory
 		if (FAILED(CreateDXGIFactory2(0, IID_PPV_ARGS(&_dxgiFactory)))) {
@@ -205,6 +232,7 @@ namespace Cookie::Graphsic {
 			return false;
 		}
 
+		gameTimer.Start();
 		return true;
 	}
 
@@ -221,8 +249,15 @@ namespace Cookie::Graphsic {
 			Resize();
 		}
 
-		//TODO: 3. update render items
+		//TODO: 3. update per frame data
 
+		//4. Timer Tick
+		gameTimer.Tick();
+		float deltaTime = gameTimer.DeltaTime();
+
+		//TODO: 5. call Tick function in each script
+
+		//TODO: 6. update per object data
 	}
 
 	bool Direct3DClient::ShouldClose() {
@@ -261,30 +296,23 @@ namespace Cookie::Graphsic {
 	}
 
 	void Direct3DClient::Shutdown() {
-
-		_fence->Release();
+		for (int i = 0; i < BufferCount; i++) {
+			FlushCommandQueue();
+		}
 
 		for (auto& buffer : _renderTargetBuffer) {
 			buffer->Release();
 		}
+		_rtvHeap->Release();
 		_swapChain->Release();
 
-		_cmdList->Release();
 		_cmdAlloc->Release();
+		_cmdList->Release();
+
+		_fence->Release();
+
 		_cmdQueue->Release();
-
-	#ifdef _DEBUG
-		if (_dxgiDebug) {
-			OutputDebugStringW(L"DXGI Reports living device objects:\n");
-			_dxgiDebug->ReportLiveObjects( // the function that will report all the living com objects. Base on this, we can check whether we still have some com objects not been released.
-				DXGI_DEBUG_ALL,
-				DXGI_DEBUG_RLO_FLAGS(DXGI_DEBUG_RLO_DETAIL | DXGI_DEBUG_RLO_IGNORE_INTERNAL)
-			);
-		}
-
-		_dxgiDebug->Release();
-		_debug->Release();
-	#endif
+		_device->Release();
 
 		if (_window) {
 			delete _window;
@@ -292,5 +320,11 @@ namespace Cookie::Graphsic {
 		}
 	}
 
+	void Direct3DClient::CloseClient() {
+		_window->CloseWindow();
+	}
+
+#pragma warning(default : 26495)
 #endif
+
 }

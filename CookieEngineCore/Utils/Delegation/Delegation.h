@@ -129,14 +129,14 @@ namespace Cookie::Util {
 
 // macros for using delegation easily
 #ifndef DECLARE_FUNCTION_DELEGATE
-#define DECLARE_FUNCTION_DELEGATE(DelegateName, ...) typedef FunctionDelegate<void, __VA_ARGS__> (DelegateName);
+#define DECLARE_FUNCTION_DELEGATE(DelegateName, ...) typedef Cookie::Util::FunctionDelegate<void, __VA_ARGS__> (DelegateName);
 #endif
 
 #ifndef DECLARE_FUNCTION_DELEGATE_WITH_RETURN_VALUE
-#define DECLARE_FUNCTION_DELEGATE_WITH_RETURN_VALUE(ReturnType, DelegateName, ...) typedef FunctionDelegate<ReturnType, __VA_ARGS__> (DelegateName);
+#define DECLARE_FUNCTION_DELEGATE_WITH_RETURN_VALUE(ReturnType, DelegateName, ...) typedef Cookie::Util::FunctionDelegate<ReturnType, __VA_ARGS__> (DelegateName);
 #endif
 
 #ifndef DECLARE_MULTICAST_FUNCTION_DELEGATE
-#define DECLARE_MULTICAST_FUNCTION_DELEGATE(DelegateName, ...) typedef MultipleDelegate<__VA_ARGS__> (DelegateName);
+#define DECLARE_MULTICAST_FUNCTION_DELEGATE(DelegateName, ...) typedef Cookie::Util::MultipleDelegate<__VA_ARGS__> (DelegateName);
 #endif
 

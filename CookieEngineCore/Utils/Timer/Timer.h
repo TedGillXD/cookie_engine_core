@@ -7,7 +7,7 @@ namespace Cookie::Util {
 	class Timer {
 	public:
 		Timer();
-		DISABLE_MOVE_AND_COPY(Timer);
+		DISABLE_COPY(Timer);
 
 	public:
 		[[nodiscard]] float TotalTime() const;

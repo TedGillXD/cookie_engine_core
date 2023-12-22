@@ -199,7 +199,7 @@ namespace Cookie::Util {
 		}
 		assert(_size < _capacity);
 
-		_data[_size] = data;
+		_data[_size] = Type(data);
 		_size++;
 	}
 

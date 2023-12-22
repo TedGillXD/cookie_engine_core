@@ -63,7 +63,9 @@ namespace Cookie::Util {
 
 	public:		// member functions
 		void Insert(Pair<Type1, Type2> data);
+		void Insert(Type1 key, Type2 value);
 		void Erase(const Type1& key);
+		void Clear();
 		[[nodiscard]] bool ContainKey(const Type1& key);
 		[[nodiscard]] Type2& GetValue(const Type1& key);
 		[[nodiscard]] const Type2 GetValue(const Type1& key) const;
@@ -126,7 +128,8 @@ namespace Cookie::Util {
 		void Expansion();
 	
 	private:
-		static const uint32_t defaultBucketSize = 13;
+		inline static const uint32_t defaultBucketSize = 13;
+		inline static const float loadFactor = 0.75;
 
 		Array<Array<Pair<Type1, Type2>>> _buckets;
 		uint32_t _size = 0;
@@ -258,6 +261,17 @@ namespace Cookie::Util {
 		if(ContainKey(data.Item1)) return;
 		_buckets[GetHashKey(data.Item1)].PushBack(data);
 		_size++;
+
+		if ((float)_buckets.GetSize() * loadFactor <= _size) {
+			Expansion();
+		}
+	}
+
+	template<typename Type1, typename Type2>
+	void HashMap<Type1, Type2>::Insert(Type1 key, Type2 value) {
+		assert(!ContainKey(key));
+		if (ContainKey(key)) return;
+		Insert(Pair<Type1, Type2>(key, value));
 	}
 
 	template<typename Type1, typename Type2>
@@ -272,6 +286,12 @@ namespace Cookie::Util {
 			}
 		}
 		_size--;
+	}
+
+	template<typename Type1, typename Type2>
+	void HashMap<Type1, Type2>::Clear() {
+		_buckets.Clear();
+		Init();
 	}
 
 	template<typename Type1, typename Type2>

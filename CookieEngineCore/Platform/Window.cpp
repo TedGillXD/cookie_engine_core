@@ -1,5 +1,6 @@
 #include "Window.h"
 #include "Input/Input.h"
+#include "Core/ClientManager/ClientManager.h"
 
 // The implementation of Window class
 namespace Cookie::Platform {
@@ -14,7 +15,7 @@ namespace Cookie::Platform {
 		_wndClass = 0;
 	}
 
-	Window::Window(uint8_t width, uint8_t height) {
+	Window::Window(uint32_t width, uint32_t height) {
 		_width = width;
 		_height = height;
 		_handle = nullptr;
@@ -89,12 +90,16 @@ namespace Cookie::Platform {
 	}
 
 	LRESULT CALLBACK Window::ProcessWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+		auto window = ((Graphsic::Direct3DClient*)Core::ClientManager::GetClient())->GetWindow();
 		switch (msg) {
 		case WM_SIZE:	//	process resize event
-			// TODO: Get the window and change the bNeedResize variable, width and height
+			// Get the window and change the bNeedResize variable, width and height
+			if (lParam && (HIWORD(lParam) != window->_height || LOWORD(lParam) != window->_width)) {
+				window->_bNeedResize = true;
+			}
 			break;
 		case WM_CLOSE:	// handle window close event
-			// TODO: Get the window by hwnd and change the _bShouldClose value.
+			Core::ClientManager::GetClient()->CloseClient();
 			break;
 		}
 		return ProcessInputs(hwnd, msg, wParam, lParam);

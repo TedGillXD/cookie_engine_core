@@ -1,25 +1,16 @@
 #pragma once
 #include <cstdint>
+#include "Input/Input.h"
 #include "Window.h"
 
 namespace Cookie::Platform {
 
-	enum ClientType : uint8_t {
-		Direct3D12 = 0,
-		Vulkan = 1,
-		Metal = 2,
-	};
-	
-	struct ClientConfiguration {
-		ClientType Type;
-		union {
-			
-		};
-	};
-
 	class ClientBase {
 	public:
 		virtual ~ClientBase() {  };
+
+		const Input _inputComponent;
+		Util::Timer gameTimer;
 
 	public:
 		virtual bool Init() = 0;
@@ -34,12 +25,7 @@ namespace Cookie::Platform {
 		virtual bool ShouldClose() = 0;
 
 		virtual void Shutdown() = 0;
+		virtual void CloseClient() = 0;
 	};
-
-	class ClientFactory {
-	public:
-		static ClientBase* NewClient(ClientConfiguration& configuration);
-	};
-
 
 }

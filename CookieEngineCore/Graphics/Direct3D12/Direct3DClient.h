@@ -7,10 +7,22 @@
 namespace Cookie::Graphsic {
 #ifdef _WIN64
 
+	class Direct3DDebug {
+	private:
+#ifdef _DEBUG
+		Microsoft::WRL::ComPtr<ID3D12Debug6> _debug;
+		Microsoft::WRL::ComPtr<IDXGIDebug1> _dxgiDebug;
+#endif	// _DEBUG
+
+	public:
+		bool Init();
+		void Shutdown();
+	};
+
 	class Direct3DClient : public Cookie::Platform::ClientBase {
 	public:
 		Direct3DClient();
-		Direct3DClient(uint8_t width, uint8_t height);
+		Direct3DClient(uint32_t width, uint32_t height, std::string windowTitle);
 		~Direct3DClient() override;
 
 	private:
@@ -35,9 +47,14 @@ namespace Cookie::Graphsic {
 
 		void Shutdown() override;
 
+		void CloseClient() override;
+
+		[[nodiscard]] inline Cookie::Platform::Window* const GetWindow() { return _window; }
+
 	private:
 		static constexpr uint32_t BufferCount = 2;
 		Cookie::Platform::Window* _window;
+		std::string _windowTitle;
 
 		// device
 		Microsoft::WRL::ComPtr<ID3D12Device10> _device;
@@ -60,11 +77,6 @@ namespace Cookie::Graphsic {
 		uint64_t _currentFence;
 		Microsoft::WRL::ComPtr<ID3D12Fence1> _fence;
 
-
-	#ifdef _DEBUG
-		Microsoft::WRL::ComPtr<ID3D12Debug6> _debug;
-		Microsoft::WRL::ComPtr<IDXGIDebug1> _dxgiDebug;
-	#endif	// _DEBUG
 	};
 
 #endif	// _WIN64
