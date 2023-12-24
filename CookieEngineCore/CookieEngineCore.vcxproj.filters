@@ -63,6 +63,12 @@
     <ClInclude Include="Utils\Delegation\Delegation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ContentLoader\Object\Object.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ContentLoader\ContentLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Main.cpp">
@@ -84,6 +90,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Utils\Timer\Timer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ContentLoader\Object\Object.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ContentLoader\ContentLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

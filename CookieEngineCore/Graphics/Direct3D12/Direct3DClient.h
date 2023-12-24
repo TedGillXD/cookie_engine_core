@@ -19,6 +19,31 @@ namespace Cookie::Graphsic {
 		void Shutdown();
 	};
 
+	struct alignas(64) Direct3DCommandSet {
+		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> _cmdAlloc;
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList7> _cmdList;
+
+		inline bool Init(Microsoft::WRL::ComPtr<ID3D12Device10>& device) {
+			if (FAILED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&_cmdAlloc)))) {
+				return false;
+			}
+			if (FAILED(device->CreateCommandList1(0, D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS(&_cmdList)))) {
+				return false;
+			}
+			return true;
+		}
+
+		inline void Reset() {
+			_cmdAlloc->Reset();
+			_cmdList->Reset(_cmdAlloc.Get(), nullptr);
+		}
+
+		inline void Release() {
+			_cmdAlloc->Release();
+			_cmdList->Release();
+		}
+	};
+
 	class Direct3DClient : public Cookie::Platform::ClientBase {
 	public:
 		Direct3DClient();
@@ -31,6 +56,7 @@ namespace Cookie::Graphsic {
 		bool CreateRenderTargetBuffer();
 		void ReleaseRenderTargetBuffer();
 		bool Resize();
+		bool CloseAllCommandList();
 
 		void FlushCommandQueue();
 
@@ -63,8 +89,8 @@ namespace Cookie::Graphsic {
 
 		// queue, allocator, list
 		Microsoft::WRL::ComPtr<ID3D12CommandQueue> _cmdQueue;
-		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> _cmdAlloc;
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList7> _cmdList;
+		Direct3DCommandSet _frameBeginResource;
+		Direct3DCommandSet _frameEndResource;
 
 		// swapchain
 		Microsoft::WRL::ComPtr<IDXGIFactory7> _dxgiFactory;
@@ -72,10 +98,15 @@ namespace Cookie::Graphsic {
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> _rtvHeap;
 		Microsoft::WRL::ComPtr<ID3D12Resource2> _renderTargetBuffer[BufferCount];
 		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[BufferCount];
+		uint32_t _currentBackBufferIndex;
 
 		// fence
 		uint64_t _currentFence;
 		Microsoft::WRL::ComPtr<ID3D12Fence1> _fence;
+
+		// rasterizer
+		D3D12_VIEWPORT _viewport;
+		RECT _rect;
 
 	};
 

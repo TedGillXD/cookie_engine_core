@@ -62,13 +62,11 @@ namespace Cookie::Graphsic {
 			return false;
 		}
 
-		//create command allocator 
-		if (FAILED(_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&_cmdAlloc)))) {
+		if (!_frameBeginResource.Init(_device)) {
 			return false;
 		}
 
-		//create command list
-		if (FAILED(_device->CreateCommandList1(0, D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS(&_cmdList)))) {
+		if (!_frameEndResource.Init(_device)) {
 			return false;
 		}
 
@@ -143,7 +141,6 @@ namespace Cookie::Graphsic {
 
 	void Direct3DClient::ReleaseRenderTargetBuffer() {
 		for (auto& buffer : _renderTargetBuffer) {
-// 			if(buffer) buffer->Release();
 			buffer.Reset();
 		}
 	}
@@ -171,6 +168,32 @@ namespace Cookie::Graphsic {
 
 		_window->NoNeedResize();
 		CreateRenderTargetBuffer();
+
+		// get new viewport and rect when window is reiszed
+		D3D12_VIEWPORT tempViewport{};
+		tempViewport.Width = static_cast<float>(_window->GetWidth());
+		tempViewport.Height = static_cast<float>(_window->GetHeight());
+		tempViewport.TopLeftX = tempViewport.TopLeftY = 0;
+		tempViewport.MinDepth = 0.f;
+		tempViewport.MaxDepth = 1.f;
+		_viewport = tempViewport;
+		RECT tempRect{};
+		tempRect = { 0, 0, (long)_window->GetWidth(), (long)_window->GetHeight() };
+		_rect = tempRect;
+
+		return true;
+	}
+
+	bool Direct3DClient::CloseAllCommandList() {
+		if (FAILED(_frameBeginResource._cmdList->Close())) {
+			return false;
+		}
+
+		//TODO: close all the commandlists
+
+		if (FAILED(_frameEndResource._cmdList->Close())) {
+			return false;
+		}
 
 		return true;
 	}
@@ -266,27 +289,58 @@ namespace Cookie::Graphsic {
 
 	void Direct3DClient::BeginFrame() {
 		// init command list first
-		_cmdAlloc->Reset();
-		_cmdList->Reset(_cmdAlloc.Get(), nullptr);
+		_frameBeginResource.Reset();
+		_frameEndResource.Reset();
 
-		// TODO: change the state of back buffer from present to render target
+		// change the state of back buffer from present to render target
+		_currentBackBufferIndex = _swapChain->GetCurrentBackBufferIndex();
+		D3D12_RESOURCE_BARRIER barr{};
+		barr.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barr.Transition.pResource = _renderTargetBuffer[_currentBackBufferIndex].Get();
+		barr.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+		barr.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		barr.Transition.Subresource = 0;
+		barr.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		_frameBeginResource._cmdList->ResourceBarrier(1, &barr);
+
+		// set render target
+		float clearValue[4] = { 0.f, 0.f, 0.f, 1.f };
+		_frameBeginResource._cmdList->ClearRenderTargetView(rtvHandles[_currentBackBufferIndex], clearValue, 0, nullptr);
+		_frameBeginResource._cmdList->OMSetRenderTargets(1, &rtvHandles[_currentBackBufferIndex], false, nullptr);
 	}
 
 	void Direct3DClient::Predraw() {
+		// Set for RS
+		_frameBeginResource._cmdList->RSSetViewports(1, &_viewport);
+		_frameBeginResource._cmdList->RSSetScissorRects(1, &_rect);
+
+		// TODO: Setting for IA: vertex buffer view, index buffer view
 		
 	}
 
 	void Direct3DClient::Draw() {
-		
+		// this function is for single thread rendering, in this case, I won't implement this function
 	}
 
 	void Direct3DClient::EndFrame() {
-		// TODO: change the state of back buffer from render target to present
+		// change the state of back buffer from render target to present
+		D3D12_RESOURCE_BARRIER barr{};
+		barr.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barr.Transition.pResource = _renderTargetBuffer[_currentBackBufferIndex].Get();
+		barr.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		barr.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+		barr.Transition.Subresource = 0;
+		barr.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		_frameEndResource._cmdList->ResourceBarrier(1, &barr);
 
 		//close commandlist and execute it.
-		if (SUCCEEDED(_cmdList->Close())) {
-			ID3D12CommandList* lists[] = { _cmdList.Get() };
-			_cmdQueue->ExecuteCommandLists(1, lists);
+		if (CloseAllCommandList()) {
+			ID3D12CommandList* lists[] = { 
+				_frameBeginResource._cmdList.Get(),
+				// TODO: cmdlist from other thread that records all the draw commands for each object
+				_frameEndResource._cmdList.Get()
+			};
+			_cmdQueue->ExecuteCommandLists(_countof(lists), lists);
 			FlushCommandQueue();
 		}
 	}
@@ -306,8 +360,8 @@ namespace Cookie::Graphsic {
 		_rtvHeap->Release();
 		_swapChain->Release();
 
-		_cmdAlloc->Release();
-		_cmdList->Release();
+		_frameBeginResource.Release();
+		_frameEndResource.Release();
 
 		_fence->Release();
 
