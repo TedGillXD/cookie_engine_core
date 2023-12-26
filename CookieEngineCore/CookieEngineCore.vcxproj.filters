@@ -69,6 +69,9 @@
     <ClInclude Include="ContentLoader\ContentLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Core\ObjectManager\ObjectManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Main.cpp">

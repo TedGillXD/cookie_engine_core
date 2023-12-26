@@ -39,9 +39,13 @@ namespace Cookie::Core {
 #endif
 
 	public:
+		//initalize before running the app
+		static void Init();
 
 		//Create a new client and return its key
 		static void CreateNewClient(const ClientConfiguration& configuration);
+
+		static void RunClient();
 
 		static void ReleaseClient();
 

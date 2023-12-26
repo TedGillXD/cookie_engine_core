@@ -8,6 +8,14 @@
 #include <string>
 #include <variant>
 
+#ifdef _WIN64
+#ifdef _COOKIE_BUILD_DLL
+#define COOKIE_API __declspec(dllexport)
+#else
+#define COOKIE_API __declspec(dllimport)
+#endif
+#endif
+
 
 // include vulkan header files
 

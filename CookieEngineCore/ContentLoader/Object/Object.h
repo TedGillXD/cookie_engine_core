@@ -8,7 +8,7 @@
 
 namespace Cookie::Content {
 	
-	enum IndexType : uint8_t{
+	enum class IndexType : uint8_t{
 		UINT8 = 8,
 		UINT16 = 16,
 		UINT32 = 32,
@@ -16,9 +16,9 @@ namespace Cookie::Content {
 		DEFAULT = UINT16
 	};
 
-	enum TextureFormat {
-		R8G8B8A8_UNORM,
-		B8G8R8A8_UNORM,
+	enum class TextureFormat {
+		R8G8B8A8_UNORM = 0,
+		B8G8R8A8_UNORM = 1,
 	};
 
 	// the object class is a abstract representation of a render item
@@ -60,12 +60,12 @@ namespace Cookie::Content {
 		~Texture() = default;
 
 	public:		
-		[[nodiscard]] inline const uint32_t GetWidth() { return _width; }
-		[[nodiscard]] inline const uint32_t GetHeight() { return _height; }
+		[[nodiscard]] inline const uint32_t Width() { return _width; }
+		[[nodiscard]] inline const uint32_t Height() { return _height; }
 		[[nodiscard]] inline const uint32_t BitPerPixel() { return _bitPerPixel; }
 		[[nodiscard]] inline const uint32_t ChannelCount() { return _channelCount; }
 		[[nodiscard]] inline const uint8_t* const GetRawTexture() { return _rawTexture.GetData(); }
-		[[nodiscard]] inline const TextureFormat GetFormat() { return _format; }
+		[[nodiscard]] inline const TextureFormat Format() { return _format; }
 
 	private:
 		uint32_t				_width;

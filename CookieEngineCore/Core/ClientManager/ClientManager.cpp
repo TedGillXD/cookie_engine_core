@@ -10,6 +10,10 @@ namespace Cookie::Core {
 #endif
 	Platform::ClientBase* ClientManager::_client = nullptr;
 
+	void ClientManager::Init(){
+
+	}
+
 	void ClientManager::CreateNewClient(const ClientConfiguration& configuration) {
 		//check if _client already has a valid value, if yes, release first
 		if (_client) {
@@ -46,6 +50,31 @@ namespace Cookie::Core {
 		return _client;
 	}
 
-	
+	void ClientManager::RunClient() {
+		if (!_client->Init()) {
+			//TODO: Log out the client is failed to initialized
+			return;
+		}
+
+		// main loop of the game
+		while (!_client->ShouldClose()) {
+			//1. update window
+			_client->Update();
+
+			//2. begin frame
+			_client->BeginFrame();
+
+			//3. pre draw
+			_client->Predraw();
+
+			//4. draw
+			_client->Draw();
+
+			//5. present
+			_client->EndFrame();
+			_client->Present();
+		}
+	}
+
 
 }

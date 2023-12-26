@@ -226,8 +226,6 @@ namespace Cookie::Graphsic {
 
 		_window->Display();
 
-		
-
 		//1. create factory
 		if (FAILED(CreateDXGIFactory2(0, IID_PPV_ARGS(&_dxgiFactory)))) {
 			return false;

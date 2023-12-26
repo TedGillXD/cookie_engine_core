@@ -4,3 +4,4 @@
 #include "DataStructure/Map.hpp"
 #include "Timer/Timer.h"
 #include "Delegation/Delegation.h"
+#include "Logger/Logger.h"

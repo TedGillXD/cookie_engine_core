@@ -25,7 +25,7 @@ namespace Cookie::Content {
 
 		obj._vertexBuffer = Util::Array<uint8_t>();
 		obj._indexBuffer = Util::Array<uint8_t>();
-		obj._indexFormat = DEFAULT;
+		obj._indexFormat = IndexType::DEFAULT;
 		obj._vertexBufferStride = 0;
 	}
 
@@ -51,7 +51,7 @@ namespace Cookie::Content {
 
 			obj._vertexBuffer = Util::Array<uint8_t>();
 			obj._indexBuffer = Util::Array<uint8_t>();
-			obj._indexFormat = DEFAULT;
+			obj._indexFormat = IndexType::DEFAULT;
 			obj._vertexBufferStride = 0;
 		}
 
@@ -63,7 +63,7 @@ namespace Cookie::Content {
 		_height(0), 
 		_bitPerPixel(0),
 		_channelCount(0),
-		_format(R8G8B8A8_UNORM) { }
+		_format(TextureFormat::R8G8B8A8_UNORM) { }
 
 	Texture::Texture(Util::Array<uint8_t> RawTexture, uint32_t width, uint32_t height, uint32_t bitPerPixel, uint32_t channelCount, TextureFormat format) 
 		: _rawTexture(RawTexture), 
