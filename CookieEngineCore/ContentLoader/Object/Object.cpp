@@ -73,16 +73,12 @@ namespace Cookie::Content {
 		_channelCount(channelCount), 
 		_format(format){ }
 
-	Material::Material() 
-		: _diffuseAlbedo(0),
-		_fresnelMap(0),
-		_normal(0),
-		_texture(0) { }
+	Material::Material() { }
 
-	Material::Material(uint32_t diffuseAlbedo, uint32_t fresnelMap, uint32_t normal, uint32_t texture) 
-		: _diffuseAlbedo(diffuseAlbedo), 
-		_fresnelMap(fresnelMap), 
-		_normal(normal), 
+	Material::Material(std::string diffuseAlbedo, std::string fresnelMap, std::string normal, std::string texture)
+		: _diffuseAlbedo(diffuseAlbedo),
+		_fresnelMap(fresnelMap),
+		_normal(normal),
 		_texture(texture) { }
 
 }

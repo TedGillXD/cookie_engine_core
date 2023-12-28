@@ -6,8 +6,11 @@
 #include <iostream>
 
 int main() {
-	
-	//TODO: Needs pre-initialization
+
+	Cookie::Content::AssetGenerator::CreateAssetFileFor2DModel("square");
+	Cookie::Content::ContentLoader::LoadModelFromFile("square");
+
+	//TODO: Needs pre-run initialization
 	Cookie::Core::ClientManager::Init();
 
 	Cookie::Core::ClientConfiguration config{};

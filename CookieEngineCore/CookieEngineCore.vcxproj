@@ -95,6 +95,7 @@
     <ClInclude Include="Core\ClientManager\ClientManager.h" />
     <ClInclude Include="ContentLoader\Object\Object.h" />
     <ClInclude Include="Core\ObjectManager\ObjectManager.h" />
+    <ClInclude Include="APIs\EngineAPIs\EngineAPI.h" />
     <ClInclude Include="Graphics\Direct3D12\Direct3DClient.h" />
     <ClInclude Include="Platform\Client.h" />
     <ClInclude Include="Platform\Input\Input.h" />
@@ -113,6 +114,7 @@
     <ClCompile Include="Core\ClientManager\ClientManager.cpp" />
     <ClCompile Include="Core\Main.cpp" />
     <ClCompile Include="ContentLoader\Object\Object.cpp" />
+    <ClCompile Include="APIs\EngineAPIs\EngineAPI.cpp" />
     <ClCompile Include="Graphics\Direct3D12\Direct3DClient.cpp" />
     <ClCompile Include="Platform\Client.cpp" />
     <ClCompile Include="Platform\Input\Input.cpp" />
