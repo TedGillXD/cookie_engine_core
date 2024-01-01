@@ -15,16 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Utils\DataStructure\Array.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Utils\Utils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils\DataStructure\Set.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils\DataStructure\Map.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Common\DebugMacros.h">
@@ -63,16 +54,19 @@
     <ClInclude Include="Utils\Delegation\Delegation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ContentLoader\Object\Object.h">
+    <ClInclude Include="Content\Object\Object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ContentLoader\ContentLoader.h">
+    <ClInclude Include="Content\Content.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\ObjectManager\ObjectManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="APIs\EngineAPIs\EngineAPI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\DataStructure\HashMapArray.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -98,13 +92,16 @@
     <ClCompile Include="Utils\Timer\Timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ContentLoader\Object\Object.cpp">
+    <ClCompile Include="Content\Object\Object.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ContentLoader\ContentLoader.cpp">
+    <ClCompile Include="Content\Content.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="APIs\EngineAPIs\EngineAPI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\ObjectManager\ObjectManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

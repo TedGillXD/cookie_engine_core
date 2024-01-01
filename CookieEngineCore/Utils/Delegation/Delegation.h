@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include "Utils/DataStructure/Array.hpp"
+#include <vector>
 
 namespace Cookie::Util {
 
@@ -123,7 +123,7 @@ namespace Cookie::Util {
 		}
 
 	private:
-		Array<std::unique_ptr<IDelegate<void, ArgsType ...>>> _delegatePtrs;
+		std::vector<std::unique_ptr<IDelegate<void, ArgsType ...>>> _delegatePtrs;
 	};
 }
 
