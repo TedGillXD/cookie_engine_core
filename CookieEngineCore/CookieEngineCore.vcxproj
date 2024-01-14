@@ -92,11 +92,15 @@
     <ClInclude Include="Common\DebugMacros.h" />
     <ClInclude Include="Common\MacroDefinition.h" />
     <ClInclude Include="Content\Content.h" />
+    <ClInclude Include="Core\ActorManager\ActorFactory.h" />
+    <ClInclude Include="Core\ActorManager\ActorManager.h" />
+    <ClInclude Include="Core\ActorManager\Actor\Actor.h" />
     <ClInclude Include="Core\ClientManager\ClientManager.h" />
     <ClInclude Include="Content\Object\Object.h" />
     <ClInclude Include="Core\ObjectManager\ObjectManager.h" />
     <ClInclude Include="APIs\EngineAPIs\EngineAPI.h" />
     <ClInclude Include="Graphics\Direct3D12\Direct3DClient.h" />
+    <ClInclude Include="Graphics\Direct3D12\Direct3DUtils\Direct3DUploadBuffer.hpp" />
     <ClInclude Include="Platform\Client.h" />
     <ClInclude Include="Platform\Input\Input.h" />
     <ClInclude Include="Platform\Platform.h" />
@@ -104,11 +108,15 @@
     <ClInclude Include="Utils\DataStructure\HashMapArray.hpp" />
     <ClInclude Include="Utils\Delegation\Delegation.h" />
     <ClInclude Include="Utils\Logger\Logger.h" />
+    <ClInclude Include="Utils\Math\Math.h" />
     <ClInclude Include="Utils\Timer\Timer.h" />
     <ClInclude Include="Utils\Utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Content\Content.cpp" />
+    <ClCompile Include="Core\ActorManager\ActorFactory.cpp" />
+    <ClCompile Include="Core\ActorManager\ActorManager.cpp" />
+    <ClCompile Include="Core\ActorManager\Actor\Actor.cpp" />
     <ClCompile Include="Core\ClientManager\ClientManager.cpp" />
     <ClCompile Include="Core\Main.cpp" />
     <ClCompile Include="Content\Object\Object.cpp" />
@@ -118,6 +126,7 @@
     <ClCompile Include="Platform\Client.cpp" />
     <ClCompile Include="Platform\Input\Input.cpp" />
     <ClCompile Include="Platform\Window.cpp" />
+    <ClCompile Include="Utils\Math\Math.cpp" />
     <ClCompile Include="Utils\Timer\Timer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

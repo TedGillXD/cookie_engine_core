@@ -1,4 +1,6 @@
 #include "ClientManager.h"
+#include "Core/ObjectManager/ObjectManager.h"
+#include "Core/ActorManager/ActorManager.h"
 
 
 namespace Cookie::Core {
@@ -10,8 +12,16 @@ namespace Cookie::Core {
 #endif
 	Platform::ClientBase* ClientManager::_client = nullptr;
 
-	void ClientManager::Init(){
+	Cookie::Util::Timer ClientManager::_gameTimer;
 
+	void ClientManager::Init(){
+		if (!_client->Init()) {
+			//TODO: Log out the client is failed to initialized
+			_bReadyToRun = false;
+			return;
+		}
+
+		_bReadyToRun = true;
 	}
 
 	void ClientManager::CreateNewClient(const ClientConfiguration& configuration) {
@@ -51,30 +61,30 @@ namespace Cookie::Core {
 	}
 
 	void ClientManager::RunClient() {
-		if (!_client->Init()) {
-			//TODO: Log out the client is failed to initialized
+		if (!_bReadyToRun) {
 			return;
 		}
 
+		// before game running, start the global timer.
+		_gameTimer.Start();
+
 		// main loop of the game
 		while (!_client->ShouldClose()) {
-			//1. update window
-			_client->Update();
+			// garbage collection
+			Core::ObjectManager::GarbageCollection();
 
-			//2. begin frame
-			_client->BeginFrame();
+			// handle input and window resize
+			_client->HandleWindowMessage();
 
-			//3. pre draw
-			_client->Predraw();
+			// update scripts and TODO: animations(animation not support yet)
+			_gameTimer.Tick();
+			Core::ActorManager::Tick(_gameTimer.DeltaTime());
 
-			//4. draw
-			_client->Draw();
-
-			//5. present
-			_client->EndFrame();
-			_client->Present();
+			// handle input and render
+			_client->Render();
 		}
-	}
 
+		Core::ActorManager::Release();
+	}
 
 }

@@ -30,8 +30,13 @@ namespace Cookie::Core {
 
 	class ClientManager {
 	private:
-		// TODO: use Map to store all clients
 		static Platform::ClientBase* _client;
+
+		// game global timer
+		static Util::Timer _gameTimer;
+
+		inline static bool _bReadyToRun = false;
+
 #ifdef _DEBUG
 #ifdef _WIN64
 		static Graphsic::Direct3DDebug* _debugForD3D;	// for debug

@@ -23,8 +23,23 @@ namespace Cookie::Content {
 		float u, v;			// uv coordinate of the vertex
 	};
 
+	class ObjectBase {
+	public:
+		inline void AddRef() { _refCount++; }
+		inline void Dereference() {
+			assert(_refCount > 0);
+			if (_refCount > 0) {
+				_refCount--;
+			}
+		}
+		[[nodiscard]] inline uint32_t GetRef() { return _refCount; }
+
+	protected:
+		uint32_t _refCount;
+	};
+
 	// the object class is a abstract representation of a render item
-	class PointsBuffer {
+	class PointsBuffer : public ObjectBase {
 	public:
 		/**
 		 * vertexBuffer: the buffer that stores all vertices in bytes
@@ -32,20 +47,16 @@ namespace Cookie::Content {
 		 * vertexSizeInByte: the size of single vertex
 		 * indexFormat: the type of single index
 		 */
-		PointsBuffer() : _vertexBufferStride(0) { }
+		PointsBuffer() : _vertexBufferStride(0) { _refCount = 0; }
 		PointsBuffer(const std::vector<uint8_t>& vertexBuffer, const std::vector<uint8_t>& indexBuffer, uint32_t vertexSizeInByte, IndexType indexFormat);
-		PointsBuffer(const PointsBuffer& obj);
-		PointsBuffer& operator=(const PointsBuffer& obj);
-		PointsBuffer(PointsBuffer&& obj) noexcept;
-		PointsBuffer& operator=(PointsBuffer&& obj) noexcept;
 		~PointsBuffer() = default;
 
 	public:
 
 		[[nodiscard]] inline const uint8_t* GetRawVertexBuffer() { return _vertexBuffer.data(); }
 		[[nodiscard]] inline const uint8_t* GetRawIndexBuffer() { return _indexBuffer.data(); }
-		[[nodiscard]] inline const uint32_t GetVertexStride() { return _vertexBufferStride; }
-		[[nodiscard]] inline const uint8_t GetIndexStride() { return (uint8_t)_indexFormat; }
+		[[nodiscard]] inline uint32_t GetVertexStride() { return _vertexBufferStride; }
+		[[nodiscard]] inline uint8_t GetIndexStride() { return (uint8_t)_indexFormat; }
 
 		[[nodiscard]] inline bool IsReadSuccessfully() {
 			return IsValid();
@@ -62,12 +73,12 @@ namespace Cookie::Content {
 		std::vector<uint8_t>	_vertexBuffer;
 		std::vector<uint8_t>	_indexBuffer;
 
-		uint32_t				_vertexBufferStride;	// the size of vertex struct
-		IndexType				_indexFormat;			// the format of single index in index buffer
+		uint32_t				_vertexBufferStride = 0;	// the size of vertex struct
+		IndexType				_indexFormat;				// the format of single index in index buffer
 	};
 
 	// Texture is a class that contains the raw data of a texture loaded from file
-	class Texture {
+	class Texture : public ObjectBase {
 	public:
 		Texture();	// the default constructor is for create an empty texture
 		Texture(std::vector<uint8_t> RawTexture, uint32_t width, uint32_t height, uint32_t bitPerPixel, uint32_t channelCount, TextureFormat format);
@@ -93,16 +104,16 @@ namespace Cookie::Content {
 		}
 
 	private:
-		uint32_t				_width;
-		uint32_t				_height;
-		uint32_t				_bitPerPixel;
-		uint32_t				_channelCount;
+		uint32_t				_width = 0;
+		uint32_t				_height = 0;
+		uint32_t				_bitPerPixel = 0;
+		uint32_t				_channelCount = 0;
 		TextureFormat			_format;
 		std::vector<uint8_t>	_rawTexture;
 	};
 
 	// Material is a class that contains Textures and other infos such as transformation, color...
-	class alignas(64) Material {
+	class alignas(64) Material : public ObjectBase {
 	public:
 		Material();
 		Material(std::string diffuseAlbedo, std::string fresnelMap, std::string normal, std::string baseColor);
@@ -140,14 +151,14 @@ namespace Cookie::Content {
 		std::string _baseColor;	// the key of texture that provide base color info
 
 		// index of each texture, when index == 0, means not valid
-		uint32_t	_diffuseIndex;
-		uint32_t	_fresnelInedx;
-		uint32_t	_normalMapIndex;
-		uint32_t	_baseColorIndex;
+		uint32_t	_diffuseIndex = 0;
+		uint32_t	_fresnelInedx = 0;
+		uint32_t	_normalMapIndex = 0;
+		uint32_t	_baseColorIndex = 0;
 	};
 
 	// 2D object raw data
-	class Object2D {
+	class Object2D : public ObjectBase {
 	public:
 		// constructors and destructor
 		Object2D() {  }
@@ -181,13 +192,15 @@ namespace Cookie::Content {
 	private:
 		std::string		_pointsBuffer;
 		std::string		_material;
-		uint32_t		_pointsBufferIndex;
-		uint32_t		_materialIndex;
-		uint8_t			_zIndex;
+		uint32_t		_pointsBufferIndex = 0;
+		uint32_t		_materialIndex = 0;
 	};
 
 	// 3D object raw data, will be developed in the future
-	class Object3D {
+	class Object3D : public ObjectBase {
+	public:
+
+	private:
 
 	};
 }

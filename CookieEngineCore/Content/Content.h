@@ -137,6 +137,12 @@ namespace Cookie::Content {
 		 */
 		static bool CreateAssetFileForMaterial(const std::vector<std::string>& texturesPath, const std::string& assetFilePath);
 
+		/**
+		 * This function will create casset file that represent a 2D object
+		 * Params:
+		 *	materialPath: path of the material casset tile
+		 *	modelPath: path of the model casset file
+		 */
 		static bool CreateAssetFileFor2DObject(const std::string& materialPath, const std::string& modelPath, const std::string& assetFilePath);
 	};
 

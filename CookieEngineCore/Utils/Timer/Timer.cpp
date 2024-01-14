@@ -28,7 +28,7 @@ namespace Cookie::Util {
 	}
 
 	void Timer::Reset() {
-		_paused = false;
+		_paused = true;
 		_isStarted = false;
 		_deltaTime = 0.0;
 		_totalPauseDuration = std::chrono::high_resolution_clock::duration::zero();

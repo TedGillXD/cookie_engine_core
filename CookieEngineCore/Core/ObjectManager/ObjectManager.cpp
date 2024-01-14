@@ -15,10 +15,15 @@ namespace Cookie::Core {
 	bool ObjectManager::bIsReady = Init();
 
 	bool ObjectManager::Init() {
-		_pointsBufferArr.Insert("", Content::PointsBuffer());
-		_texturesArr.Insert("", Content::Texture());
-		_materialArr.Insert("", Content::Material());
-		_object2DArr.Insert("", Content::Object2D());
+		_pointsBufferArr.Insert("empty model", Content::PointsBuffer());
+		_texturesArr.Insert("empty texture", Content::Texture());
+		_materialArr.Insert("empty material", Content::Material());
+		_object2DArr.Insert("empty object2D", Content::Object2D());
+
+		_pointsBufferArr.At(0).AddRef();
+		_texturesArr.At(0).AddRef();
+		_materialArr.At(0).AddRef();
+		_object2DArr.At(0).AddRef();
 
 		return true;
 	}
@@ -102,6 +107,7 @@ namespace Cookie::Core {
 		uint32_t materialIndex = LoadMaterial(object2D.GetMaterialPath());
 		uint32_t pointsBufferIndex = LoadModel(object2D.GetPointsBufferPath());
 		object2D.Init(materialIndex, pointsBufferIndex);
+		object2D.AddRef();
 
 		return index;
 	}
@@ -125,6 +131,7 @@ namespace Cookie::Core {
 		uint32_t normalMapIndex = LoadTexture(material.GetNormalMapPath());
 		uint32_t baseColorIndex = LoadTexture(material.GetBaseColorPath());
 		material.Init(diffuseAlbedoIndex, fresnelMapIndex, normalMapIndex, baseColorIndex);
+		material.AddRef();
 
 		return index;
 	}
@@ -140,6 +147,7 @@ namespace Cookie::Core {
 		}
 
 		uint32_t index = ReadAssetFromFile(texturePath, Content::DataType::Texture);
+		_texturesArr.At(index).AddRef();
 		if (index == 0) {
 			Util::logger.Log("Load texture failed: " + texturePath, Util::Logger::Level::Error);
 			return 0;
@@ -155,6 +163,7 @@ namespace Cookie::Core {
 		}
 
 		uint32_t index = ReadAssetFromFile(modelPath, Content::DataType::Model);
+		_pointsBufferArr.At(index).AddRef();
 		if (index == 0) {
 			Util::logger.Log("Load model failed: " + modelPath, Util::Logger::Level::Error);
 			return 0;
@@ -195,36 +204,130 @@ namespace Cookie::Core {
 		return _pointsBufferArr.At(key);
 	}
 
-	void ObjectManager::RemoveObject2D(uint32_t inedx) {
-		_object2DArr.Remove(inedx);
+	void ObjectManager::RemoveObject2D(uint32_t index) {
+		if (index == 0) {
+			return;
+		}
+
+		Content::Object2D& object2D = _object2DArr.At(index);
+		object2D.Dereference();
+
+		// dereference material and points buffer
+		RemoveMaterial(object2D.GetMaterialIndex());
+		RemoveModel(object2D.GetPointsBufferIndex());
 	}
 
 	void ObjectManager::RemoveObject2D(const std::string& key) {
-		_object2DArr.Remove(key);
+		if (key.empty()) {
+			return;
+		}
+
+		Content::Object2D& object2D = _object2DArr.At(key);
+		object2D.Dereference();
+
+		// dereference material and points buffer
+		RemoveMaterial(object2D.GetMaterialIndex());
+		RemoveModel(object2D.GetPointsBufferIndex());
 	}
 
 	void ObjectManager::RemoveMaterial(uint32_t index) {
-		_materialArr.Remove(index);
+		if (index == 0) {
+			return;
+		}
+
+		Content::Material& material = _materialArr.At(index);
+		material.Dereference();
+
+		// dereference textures
+		RemoveTexture(material.GetBaseColorIndex());
+		RemoveTexture(material.GetDiffuseIndex());
+		RemoveTexture(material.GetFresnelIndex());
+		RemoveTexture(material.GetNormalMapIndex());
 	}
 
 	void ObjectManager::RemoveMaterial(const std::string& key) {
-		_materialArr.Remove(key);
+		if (key.empty()) {
+			return;
+		}
+		
+		Content::Material& material = _materialArr.At(key);
+		material.Dereference();
+
+		// dereference textures
+		RemoveTexture(material.GetBaseColorIndex());
+		RemoveTexture(material.GetDiffuseIndex());
+		RemoveTexture(material.GetFresnelIndex());
+		RemoveTexture(material.GetNormalMapIndex());
 	}
 
 	void ObjectManager::RemoveTexture(uint32_t index) {
-		_texturesArr.Remove(index);
+		if (index == 0) {
+			return;
+		}
+
+		Content::Texture& texture = _texturesArr.At(index);
+		texture.Dereference();
 	}
 
 	void ObjectManager::RemoveTexture(const std::string& key) {
-		_texturesArr.Remove(key);
+		if (key.empty()) {
+			return;
+		}
+
+		Content::Texture& texture = _texturesArr.At(key);
+		texture.Dereference();
 	}
 
 	void ObjectManager::RemoveModel(uint32_t index) {
-		_pointsBufferArr.Remove(index);
+		if (index == 0) {
+			return;
+		}
+
+		Content::PointsBuffer& model = _pointsBufferArr.At(index);
+		model.Dereference();
 	}
 
 	void ObjectManager::RemoveModel(const std::string& key) {
-		_pointsBufferArr.Remove(key);
+		if (key.empty()) {
+			return;
+		}
+
+		Content::PointsBuffer& model = _pointsBufferArr.At(key);
+		model.Dereference();
+	}
+
+	void ObjectManager::GarbageCollection() {
+		for (auto object : _object2DArr) {
+			if (object.second.GetRef() != 0) {
+				continue;
+			}
+
+			_object2DArr.Remove(object.first);
+		}
+
+		for (auto material : _materialArr) {
+			if (material.second.GetRef() != 0) {
+				continue;
+			}
+
+			_materialArr.Remove(material.first);
+		}
+
+		for (auto texture : _texturesArr) {
+			if (texture.second.GetRef() != 0) {
+				continue;
+			}
+
+			_texturesArr.Remove(texture.first);
+		}
+
+		for (auto model : _pointsBufferArr) {
+			if (model.second.GetRef() != 0) {
+				continue;
+			}
+
+			_pointsBufferArr.Remove(model.first);
+		}
 	}
 
 }

@@ -17,6 +17,49 @@ namespace Cookie::Util {
 		DISABLE_MOVE_AND_COPY(HashMapArray);
 
 	public:
+		class Iterator {
+		public:
+			Iterator(std::vector<ValueType>* arrPtr, std::unordered_map<uint32_t, KeyType>* indexToKeyPtr) { 
+				_arrPtr = arrPtr;
+				_indexToKeyPtr = indexToKeyPtr;
+				_index = 0;
+			}
+			Iterator(std::vector<ValueType>* arrPtr, std::unordered_map<uint32_t, KeyType>* indexToKeyPtr, uint32_t maxIndex) {
+				_arrPtr = arrPtr;
+				_indexToKeyPtr = indexToKeyPtr;
+				_index = maxIndex;
+			}
+
+			inline std::pair<uint32_t, ValueType&> operator*() {
+				return std::pair<uint32_t, ValueType&>(_index, (*_arrPtr)[_index]);
+			}
+			
+			inline Iterator& operator++() {
+				// calculate the next index
+				_index++;
+				while (_indexToKeyPtr->find(_index) == _indexToKeyPtr->end() && _index < _arrPtr->size()) { _index++; }
+
+				return *this;
+			}
+
+			inline bool operator!=(const Iterator& it) { 
+				return (_arrPtr != it._arrPtr || _indexToKeyPtr != it._indexToKeyPtr || _index != it._index); 
+			}
+
+			inline bool operator==(const Iterator& it) {
+				return (_arrPtr == it._arrPtr && _indexToKeyPtr == it._indexToKeyPtr && _index == it._index);
+			}
+		private:
+			
+			uint32_t _index;
+			std::vector<ValueType>* _arrPtr;
+			std::unordered_map<uint32_t, KeyType>* _indexToKeyPtr;
+		};
+
+		[[nodiscard]] inline Iterator begin() { return Iterator(&_arr, &_indexToKey); }
+		[[nodiscard]] inline Iterator end() { return Iterator(&_arr, &_indexToKey, (uint32_t)_arr.size()); }
+
+	public:
 		//insert value into it and return its index
 		uint32_t Insert(KeyType&& key, ValueType&& value);
 		uint32_t Insert(const KeyType& key, const ValueType& value);
@@ -167,7 +210,7 @@ namespace Cookie::Util {
 		std::unique_lock<std::shared_mutex> lock(_mutex);
 		assert(index < _arr.size());
 		_availableIndex.push_back(index);
-		KeyType& oldKey = _indexToKey[index];
+		KeyType oldKey = _indexToKey[index];
 		_indexToKey.erase(index);
 		_keyToIndex.erase(oldKey);
 	}

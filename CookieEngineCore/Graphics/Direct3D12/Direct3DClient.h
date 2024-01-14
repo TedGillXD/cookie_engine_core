@@ -61,6 +61,9 @@ namespace Cookie::Graphsic {
 		void FlushCommandQueue();
 
 	public:
+		void Render() override;
+		void HandleWindowMessage() override;
+
 		bool Init() override;
 		void Update() override;
 		bool ShouldClose() override;

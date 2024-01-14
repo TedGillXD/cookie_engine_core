@@ -253,32 +253,14 @@ namespace Cookie::Graphsic {
 			return false;
 		}
 
-		gameTimer.Start();
 		return true;
 	}
 
 	void Direct3DClient::Update() {
-		//1. process window message
-		MSG message;
-		while (PeekMessageW(&message, _window->GetHandle(), 0, 0, PM_REMOVE)) {
-			TranslateMessage(&message);
-			DispatchMessageW(&message);
-		}
 
-		//2. Process resize event if needed.
-		if (_window->NeedResize()) {
-			Resize();
-		}
+		//TODO: 3. update d3d12 per frame data
 
-		//TODO: 3. update per frame data
-
-		//4. Timer Tick
-		gameTimer.Tick();
-		float deltaTime = gameTimer.DeltaTime();
-
-		//TODO: 5. call Tick function in each script
-
-		//TODO: 6. update per object data
+		//TODO: 4. update d3d12 per object data
 	}
 
 	bool Direct3DClient::ShouldClose() {
@@ -374,6 +356,39 @@ namespace Cookie::Graphsic {
 
 	void Direct3DClient::CloseClient() {
 		_window->CloseWindow();
+	}
+
+	void Direct3DClient::Render() {
+		//1. update window
+		Update();
+
+		//2. begin frame
+		BeginFrame();
+
+		//3. pre draw
+		Predraw();
+
+		//4. draw
+		Draw();
+
+		//5. present
+		EndFrame();
+		Present();
+	}
+
+	void Direct3DClient::HandleWindowMessage() {
+		//1. process window message
+		MSG message;
+		while (PeekMessageW(&message, _window->GetHandle(), 0, 0, PM_REMOVE)) {
+			TranslateMessage(&message);
+			DispatchMessageW(&message);
+		}
+
+		//2. Process resize event if needed.
+		if (_window->NeedResize()) {
+			Resize();
+		}
+
 	}
 
 #pragma warning(default : 26495)

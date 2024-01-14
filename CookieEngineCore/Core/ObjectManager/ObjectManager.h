@@ -28,14 +28,10 @@ namespace Cookie::Core {
 		[[nodiscard]] static Content::PointsBuffer& GetModel(const std::string& key);
 
 		// Remove from array
-		static void RemoveObject2D(uint32_t inedx);
+		static void RemoveObject2D(uint32_t index);
 		static void RemoveObject2D(const std::string& key);
-		static void RemoveMaterial(uint32_t index);
-		static void RemoveMaterial(const std::string& key);
-		static void RemoveTexture(uint32_t index);
-		static void RemoveTexture(const std::string& key);
-		static void RemoveModel(uint32_t index);
-		static void RemoveModel(const std::string& key);
+
+		static void GarbageCollection();
 		
 	private:
 		static uint32_t LoadMaterial(const std::string& materialPath);
@@ -43,6 +39,15 @@ namespace Cookie::Core {
 		static uint32_t LoadTexture(const std::string& texturePath);
 
 		static uint32_t LoadModel(const std::string& modelPath);
+
+		static void RemoveMaterial(uint32_t index);
+		static void RemoveMaterial(const std::string& key);
+
+		static void RemoveTexture(uint32_t index);
+		static void RemoveTexture(const std::string& key);
+
+		static void RemoveModel(uint32_t index);
+		static void RemoveModel(const std::string& key);
 
 		static bool Init();
 

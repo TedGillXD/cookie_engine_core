@@ -10,9 +10,11 @@ namespace Cookie::Platform {
 		virtual ~ClientBase() {  };
 
 		const Input _inputComponent;
-		Util::Timer gameTimer;
 
 	public:
+		virtual void Render() = 0;
+		virtual void HandleWindowMessage() = 0;
+
 		virtual bool Init() = 0;
 		virtual void Update() = 0;
 
